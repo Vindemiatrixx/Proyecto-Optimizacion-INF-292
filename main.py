@@ -2,6 +2,9 @@ import threading
 import numpy as np
 import random
 
+np.random.seed(42)
+random.seed(42)
+
 def leer_instancias(archivo):
 
     instancias = []
