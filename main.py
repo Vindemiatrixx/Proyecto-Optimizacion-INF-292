@@ -1,6 +1,7 @@
 import threading
 import numpy as np
 import random
+import multiprocessing
 
 np.random.seed(42)
 random.seed(42)
@@ -96,111 +97,55 @@ def eleccion_fn(eleccion):
 
     if eleccion == 1:
         archivo = "instancias_p.txt"
+        tipo = "Pequeña_"
     elif eleccion == 2:
         archivo = "instancias_m.txt"
+        tipo = "Mediana_"
     elif eleccion == 3:
         archivo = "instancias_g.txt"
+        tipo = "Grande_"
 
     instancias = leer_instancias(archivo)
 
-    valores_costoXtiempo = []
-    valores_sobrecalificacion = []
-    presupuestos = []
-
-    distribuciones_W = []
-    distribuciones_T = []
-
-    tiempos_disponible_trabajadores = []
-    tiempos_necesario_tareas = []
-    matrix = []
+    string_archivo = "Instancia_"
+    txt = ".txt"
+    valor_i = 1
 
     for instancia in instancias:
 
-        
+        archivo = string_archivo + tipo + str(valor_i) + txt
+
         valor_aleatorio_trabajadores = random.randint(instancia[0], instancia[1])
         valor_aleatorio_tareas = random.randint(instancia[2], instancia[3])
 
-        #distribucion_trabajadores = distribucion_triangular_trabajadores(valor_aleatorio_trabajadores)
-        #distribuciones_W.append(distribucion_trabajadores) 
-        
-        #distribucion_tareas= distribucion_triangular_tareas(valor_aleatorio_tareas)
-        #distribuciones_T.append(distribucion_tareas)
-        
-        #tiempos_disponible_trabajadores.append(tiempo_disp_trabajador(valor_aleatorio_trabajadores))
-        #tiempos_necesario_tareas.append(tiempo_nece_tareas(valor_aleatorio_tareas))
+        with open(archivo, 'w') as archivo:
+            archivo.write(str(distribucion_triangular_trabajadores(valor_aleatorio_trabajadores)) + '\n')
+            archivo.write(str(distribucion_triangular_tareas(valor_aleatorio_tareas)) + '\n')
+            archivo.write(str(tiempo_disp_trabajador(valor_aleatorio_trabajadores)) + '\n')
+            archivo.write(str(tiempo_nece_tareas(valor_aleatorio_tareas)) + '\n')
+            archivo.write(str(generacion_costoXtiempo()) + '\n')
+            archivo.write(str(generacion_costo_fijo(valor_aleatorio_trabajadores, valor_aleatorio_tareas)) + '\n')
+            archivo.write(str(generacion_precioXsobrecalificacion(valor_aleatorio_tareas)) + '\n')
+            archivo.write(str(generacion_presupuestos(valor_aleatorio_trabajadores, valor_aleatorio_tareas)) + '\n')
 
-        #valores_costoXtiempo.append(generacion_costoXtiempo())
-        #valores_sobrecalificacion.append(generacion_precioXsobrecalificacion(valor_aleatorio_tareas))
-        #presupuestos.append(generacion_presupuestos(valor_aleatorio_trabajadores,valor_aleatorio_tareas))
-
-        #matrix.append(generacion_costo_fijo(valor_aleatorio_trabajadores, valor_aleatorio_tareas))
-
-        print(distribucion_triangular_trabajadores(valor_aleatorio_trabajadores))
-        print(distribucion_triangular_tareas(valor_aleatorio_tareas))
-        print(tiempo_disp_trabajador(valor_aleatorio_trabajadores))
-        print(tiempo_nece_tareas(valor_aleatorio_tareas))
-        print(generacion_costoXtiempo())
-        print(generacion_costo_fijo(valor_aleatorio_trabajadores,valor_aleatorio_tareas))
-        print(generacion_precioXsobrecalificacion(valor_aleatorio_tareas))
-        print(generacion_presupuestos(valor_aleatorio_trabajadores,valor_aleatorio_tareas))
-
-    """  
-    print (distribuciones_W)
-    print(distribuciones_T)
-    print(tiempos_disponible_trabajadores)
-    print(tiempos_necesario_tareas)
-    print(valores_costoXtiempo)
-    print(valores_sobrecalificacion)
-    print(valores_sobrecalificacion[0][0])
-    
-    print(presupuestos)
-    """
-
-    
-
+        valor_i += 1
 
         
 
 
+##################################################
 
-while True:
-    try:
-        eleccion = int(input("Ingresa una opción de tamaño de instancia: \n\t1) Pequeña\n\t2) Mediana\n\t3) Grande\n\t4) Todas\n"))
-        if 1 <= eleccion <= 4:
-            break
-    except ValueError:
-            print("Ingresa un valor válido.")
-    
+if __name__ == "__main__":
 
-if eleccion == 1: #Instancia pequeña
-    eleccion_fn(eleccion)
+    procesos = []
 
-elif eleccion == 2: #Instancia mediana
-    eleccion_fn(eleccion)
-    
-elif eleccion == 3: #Instancia grande
-    eleccion_fn(eleccion)
+    for i in range(1, 4):
+        proceso = multiprocessing.Process(target=eleccion_fn, args=(i,))
+        procesos.append(proceso)
+        proceso.start()
 
-elif eleccion == 4: #Todos las instancias
-
-    hilos = []
-    eleccion = 1
-    hilo1 = threading.Thread(target=eleccion_fn, args=(eleccion,))
-    hilos.append(hilo1)
-    hilo1.start()
-
-    eleccion = 2
-    hilo2 = threading.Thread(target=eleccion_fn, args=(eleccion,))
-    hilos.append(hilo2)
-    hilo2.start()
-
-    eleccion = 3
-    hilo3 = threading.Thread(target=eleccion_fn, args=(eleccion,))
-    hilos.append(hilo3)
-    hilo3.start()
-
-    for hilo in hilos:
-        hilo.join()
+    for proceso in procesos:
+        proceso.join()
 
 
 
